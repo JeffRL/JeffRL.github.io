@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="One wish a day. See how lucky you are today.">
+  <meta name="theme-color" content="#000000">
+  <title>Daily Stargazing</title>
+  <link rel="shortcut icon" type="image/png" href="../images/favicon.png">
+
+  <!-- same nav styles as the main page, kept here so it shows up right away -->
+  <style>
+    :root {
+      --bg: #000;
+      --text: #f5f5f7;
+      --muted: #a1a1a6;
+      --link-color: whitesmoke;
+      --accent: #2997ff;
+      --nav-height: 48px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      /* keeps room for the scrollbar, so the page doesn't shift sideways when scrolling is locked */
+      scrollbar-gutter: stable;
+      /* a soft light scrollbar on the night sky, so it doesn't turn into a black bar on hover */
+      scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* the same look in Chrome, Edge and Safari */
+    html::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    html::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+
+    html::-webkit-scrollbar-thumb {
+      border: 2px solid var(--bg);
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.28);
+    }
+
+    html::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.45);
+    }
+
+    /* the page scrolls down to the constellation, but not while a wish is playing */
+    body {
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    body.wishing {
+      overflow: hidden;
+    }
+
+    /* the constellation stays out of the way until today's wish has been made */
+    body.before-wish #constellation {
+      display: none;
+    }
+
+    a {
+      color: var(--link-color);
+      text-decoration: none;
+    }
+
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      height: var(--nav-height);
+      display: flex;
+      align-items: center;
+      padding: 0 max(16px, calc((100% - 980px) / 2));
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 14px;
+    }
+
+    nav .name {
+      font-weight: 600;
+      margin-right: auto;
+    }
+
+    nav a {
+      color: #d2d2d7;
+      transition: color 0.2s;
+    }
+
+    nav a:hover,
+    nav a.current {
+      color: #fff;
+    }
+
+    .nav-link {
+      padding: 0 14px;
+      line-height: 14px;
+    }
+
+    .nav-link:last-child {
+      padding-right: 0;
+    }
+
+    /* thin line between each link */
+    .nav-link + .nav-link {
+      border-left: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    @media (max-width: 734px) {
+      nav {
+        font-size: 12px;
+      }
+      .nav-link {
+        padding: 0 10px;
+      }
+    }
+  </style>
+
+  <link rel="stylesheet" href="luck.css">
+  <link rel="stylesheet" href="logbook.css">
+  <link rel="stylesheet" href="constellation.css">
+
+  <!-- after resetting everything, the fresh page fades in from black (set by wipeAllData in luck.js) -->
+  <style>
+    html.fade-in body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: #000;
+      pointer-events: none;
+      animation: fadeFromBlack 1.2s 0.2s ease-out forwards;
+    }
+
+    @keyframes fadeFromBlack {
+      to {
+        opacity: 0;
+      }
+    }
+  </style>
+  <script>
+    try {
+      if (sessionStorage.getItem("dailystargazing-fade-in")) {
+        sessionStorage.removeItem("dailystargazing-fade-in");
+        document.documentElement.classList.add("fade-in");
+      }
+    } catch (error) {
+      // storage is blocked, so there's no fade
+    }
+  </script>
+  <script src="../stars.js" defer></script>
+  <script src="../content.js" defer></script>
+  <script src="sounds.js" defer></script>
+  <script src="fortunes.js" defer></script>
+  <script src="starnames.js" defer></script>
+  <script src="skills.js" defer></script>
+  <script src="luck.js" defer></script>
+  <script src="logbook.js" defer></script>
+  <script src="share.js" defer></script>
+  <script src="constellation.js" defer></script>
+  <script src="starcollection.js" defer></script>
+</head>
+
+<body class="before-wish">
+  <div id="nebula"></div>
+  <canvas id="sky"></canvas>
+  <nav id="nav">
+    <a class="name" href="../index.html">Jeffrey Tang</a>
+    <a class="nav-link current" href="index.html">Daily Stargazing</a>
+    <!-- category links get added here by luck.js -->
+    <a class="nav-link" href="https://github.com/JeffreyTangMain/">GitHub</a>
+  </nav>
+
+  <!-- the first screen: the wish -->
+  <div id="wishStage">
+    <div id="clouds"></div>
+    <div id="horizon"></div>
+
+    <main id="start">
+      <h1>Daily Stargazing</h1>
+      <p>One wish a day. Make it count.</p>
+      <button id="wishButton">Make a wish</button>
+    </main>
+
+    <div id="wash"></div>
+    <canvas id="wish"></canvas>
+    <div id="nearClouds"></div>
+
+    <section id="result" hidden>
+      <div class="plate">
+        <p class="plate-label">Today's Luck</p>
+        <div class="plate-stars" id="plateStars"></div>
+      </div>
+      <div class="emotes" id="emotes"></div>
+      <div class="after">
+        <p id="reading"></p>
+        <p class="next">Next wish in <span id="countdown">--:--:--</span></p>
+      </div>
+      <button id="addStarButton" hidden>&#10022; Add to Constellation</button>
+      <a class="to-sky" href="#constellation">Your constellation &darr;</a>
+    </section>
+  </div>
+
+  <!-- further down: the constellation, filled in by constellation.js -->
+  <section id="constellation">
+    <header class="sky-header">
+      <h2 id="skyName" title="Click to rename">My Constellation</h2>
+      <!-- this week's rank, filled by the stardust you collect -->
+      <div class="rank-card" id="rankCard">
+        <!-- only used while ranking up: a light sweeping across the card, a white flash, and a label -->
+        <span class="rank-glass"><span class="rank-shine" id="rankShine"></span><span class="rank-flash" id="rankFlash"></span></span>
+        <span class="rank-label" id="rankLabel"></span>
+        <div class="rank-top">
+          <span class="rank-icon" id="rankIcon">&#10022;</span>
+          <span class="rank-name" id="rankName">Constellation 1</span>
+          <span class="rank-bonus" id="rankBonus">+0 crystals on Monday</span>
+        </div>
+        <div class="rank-bar" id="rankBar"><span id="rankFill"></span></div>
+        <p class="rank-progress"><span><span id="dustCount">0</span> <span id="rankNext">/ 150 stardust this week</span></span> <span class="rank-record" id="rankRecord"></span></p>
+      </div>
+      <p class="sky-money">
+        <span class="money"><span class="money-icon crystal">&#9670;</span> <span id="crystalCount">0</span> stellar crystals</span>
+      </p>
+      <p class="sky-timer" id="crystalTimer"></p>
+    </header>
+    <div class="sky-area" id="skyArea">
+      <canvas id="skyCanvas"></canvas>
+      <div class="sky-tip" id="skyTip"></div>
+      <p class="sky-empty" id="skyEmpty">Your constellation is empty. Make today's wish and add it, or pick a star from your collection.</p>
+    </div>
+    <div class="sky-controls">
+      <span id="slotCount">0 / 5 stars</span>
+      <button id="addSlotButton">+ Add a star</button>
+      <button id="editSkyButton">Move stars</button>
+    </div>
+    <ul class="sky-help">
+      <li>Stars generate stardust and crystals over time.</li>
+	  <li>Tap to collect! Stars generate slower when full.</li>
+      <li>Stardust helps you rank up, crystals can be used as currency.</li>
+      <li>Higher ranks pay out more crystals based on how much you earned.</li>
+      <li>Put stars close together to create constellations.</li>
+    </ul>
+  </section>
+
+  <div id="flash"></div>
+
+  <div id="toolbar">
+    <button id="logButton" class="tool" aria-label="Open logbook" title="Logbook">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5C4.7 20 4 19.3 4 18.5z"/><path d="M13 4h5.5c.8 0 1.5.7 1.5 1.5v13c0 .8-.7 1.5-1.5 1.5H13z"/></svg>
+    </button>
+    <button id="starsButton" class="tool" aria-label="Open star collection" title="Star collection">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 5.4L19 10l-5.2 1.6L12 17l-1.8-5.4L5 10l5.2-1.6z"/><path d="M19 16l.7 1.8 1.8.7-1.8.7L19 21l-.7-1.8-1.8-.7 1.8-.7z"/></svg>
+    </button>
+    <button id="copyTextButton" class="tool" aria-label="Copy result as text" title="Copy as text" disabled>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6M9 18h3"/></svg>
+    </button>
+    <button id="copyImageButton" class="tool" aria-label="Copy result as an image" title="Copy as image" disabled>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-8 8"/></svg>
+    </button>
+    <button id="soundButton" class="tool" aria-label="Mute sound"></button>
+  </div>
+  <div id="toast" role="status"></div>
+
+  <!-- the star collection, filled in by starcollection.js -->
+  <aside id="starDrawer" hidden>
+    <div class="drawer-panel">
+      <header class="drawer-head">
+        <h2 id="drawerTitle">Star Collection</h2>
+        <span class="drawer-count" id="drawerCount"></span>
+        <button class="drawer-close" id="drawerClose" aria-label="Close star collection">&times;</button>
+      </header>
+      <p class="drawer-money">
+        <span><span class="money-icon dust">&#10022;</span> <b id="drawerDust">0</b> stardust</span>
+        <span><span class="money-icon crystal">&#9670;</span> <b id="drawerCrystals">0</b> crystals</span>
+      </p>
+      <div id="drawerList">
+        <div class="drawer-controls">
+          <select id="starSort" aria-label="Sort stars">
+            <option value="newest">Newest first</option>
+            <option value="rarity">Rarity</option>
+            <option value="level">Level</option>
+            <option value="name">Name</option>
+          </select>
+          <select id="starFilter" aria-label="Show stars">
+            <option value="all">All stars</option>
+            <option value="active">In the constellation</option>
+            <option value="favorite">Favorites</option>
+            <option value="5">5 stars</option>
+            <option value="4">4 stars</option>
+            <option value="3">3 stars</option>
+            <option value="2">2 stars</option>
+            <option value="1">1 star</option>
+            <option value="debug">Debug stars</option>
+          </select>
+        </div>
+        <div class="star-grid" id="starGrid"></div>
+      </div>
+      <div class="drawer-detail" id="drawerDetail" hidden></div>
+    </div>
+  </aside>
+
+  <!-- the logbook, filled in by logbook.js -->
+  <div id="bookOverlay" hidden>
+    <div class="book" id="book">
+      <div class="book-pages">
+        <div class="page page-left" id="pageLeft"></div>
+        <div class="page page-right" id="pageRight"></div>
+        <div class="leaf" id="leaf">
+          <div class="leaf-face leaf-front" id="leafFront"></div>
+          <div class="leaf-face leaf-back" id="leafBack"></div>
+        </div>
+      </div>
+      <div class="cover" id="cover">
+        <div class="cover-front">
+          <span class="cover-star">&#9733;</span>
+          <span class="cover-title">Luck Log</span>
+        </div>
+        <div class="cover-back"></div>
+      </div>
+      <div class="ribbons" id="ribbons">
+        <button class="ribbon" data-view="collection">Collection</button>
+        <button class="ribbon" data-view="daily">Daily</button>
+        <button class="ribbon" data-view="graph">Graph</button>
+      </div>
+      <button class="book-close" id="bookClose" aria-label="Close logbook">&times;</button>
+      <button class="book-top" id="bookTop" aria-label="Back to the top" hidden>&uarr;</button>
+      <!-- a reading from the collection, opened over the book -->
+      <div class="reading-popup" id="readingPopup" hidden>
+        <div class="reading-card" role="dialog" aria-modal="true" aria-label="Reading">
+          <button class="reading-close" id="readingClose" aria-label="Close reading">&times;</button>
+          <div id="readingBody"></div>
+        </div>
+      </div>
+      <!-- the warning before resetting everything -->
+      <div class="reading-popup" id="resetPopup" hidden>
+        <div class="reading-card" role="alertdialog" aria-modal="true" aria-labelledby="resetTitle">
+          <h3 class="reset-title" id="resetTitle">Reset everything?</h3>
+          <p>This erases your logbook, every star, your crystals, ranks and rewards, and today's wish on this browser. It can't be undone.</p>
+          <div class="reset-actions">
+            <button class="reset-cancel" id="resetCancel">Cancel</button>
+            <button class="reset-confirm" id="resetConfirm">Reset everything</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

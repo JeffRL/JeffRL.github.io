@@ -1,0 +1,644 @@
+/* Sky colors like a night sky over the clouds: dark at the top, bright blue at the horizon */
+
+#nebula {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(ellipse at 25% 20%, rgba(90, 120, 255, 0.35), transparent 55%),
+    radial-gradient(ellipse at 75% 35%, rgba(120, 70, 200, 0.25), transparent 50%),
+    linear-gradient(to bottom, #0d0a26 0%, #1a1c55 40%, #2f4fa8 75%, #7f9fe6 100%);
+  transition: opacity 1s;
+}
+
+#sky {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  transition: opacity 1s;
+}
+
+/* The wish screen: exactly one screen tall, with everything for the wish inside it */
+
+#wishStage {
+  position: relative;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+}
+
+/* Clouds */
+
+/* hangs off the right and bottom of the screen on purpose, so moving it never shows an edge.
+   Nothing gets clipped here: on short or wide screens the taller clouds reach above this box,
+   and the page itself already hides anything that goes off screen. */
+#clouds {
+  position: absolute;
+  left: 0;
+  right: -45vw;
+  bottom: -12vh;
+  height: 57vh;
+  overflow: visible;
+  pointer-events: none;
+  transition: transform 1.4s cubic-bezier(0.5, 0, 0.2, 1), opacity 1s;
+}
+
+.cloud {
+  position: absolute;
+  bottom: 12vh;
+  width: 600px;
+  height: 260px;
+  animation: cloudDrift 30s ease-in-out infinite alternate;
+}
+
+.cloud.right {
+  animation-duration: 38s;
+  animation-direction: alternate-reverse;
+}
+
+.cloud-floor {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* each puff is bright in the middle and fades out to nothing at the edge, so overlapping puffs
+   melt into one soft cloud instead of looking like separate balls */
+.puff {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 45% 38%,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(246, 249, 255, 0.97) 28%,
+    rgba(225, 235, 253, 0.8) 46%,
+    rgba(196, 213, 246, 0.45) 60%,
+    rgba(180, 200, 240, 0) 71%);
+}
+
+/* a light blur on the whole cloud softens it a bit more */
+.cloud,
+.cloud-floor {
+  filter: blur(3px);
+}
+
+@keyframes cloudDrift {
+  from {
+    transform: translateX(-20px);
+  }
+  to {
+    transform: translateX(30px);
+  }
+}
+
+/* haze over the bottom of the clouds, like a sea of clouds going off into the distance */
+#horizon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  /* starts below the screen so moving it up doesn't leave a gap at the bottom */
+  bottom: -10vh;
+  height: 40vh;
+  background: linear-gradient(to top, rgba(225, 235, 255, 0.95) 0%, rgba(225, 235, 255, 0.95) 25%, rgba(170, 195, 245, 0.55) 51%, rgba(120, 150, 230, 0) 100%);
+  pointer-events: none;
+  transition: transform 1.4s cubic-bezier(0.5, 0, 0.2, 1), opacity 1s;
+}
+
+/* Start screen */
+
+#start {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px 12vh;
+  text-align: center;
+  transition: opacity 0.4s, transform 0.6s;
+}
+
+#start h1 {
+  margin: 0;
+  font-size: clamp(44px, 9vw, 96px);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  text-shadow: 0 0 40px rgba(140, 170, 255, 0.6);
+  animation: rise 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+#start p {
+  margin: 12px 0 36px;
+  font-size: clamp(18px, 2.4vw, 24px);
+  color: #c9d3ff;
+  animation: rise 1.2s 0.15s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+#wishButton {
+  padding: 16px 34px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 980px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #fff;
+  font-size: 19px;
+  font-family: inherit;
+  cursor: pointer;
+  animation: rise 1.2s 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) both, glowPulse 2.8s 0.3s ease-in-out infinite;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+#wishButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.22);
+  transform: scale(1.04);
+}
+
+#wishButton:disabled {
+  cursor: default;
+  opacity: 0.6;
+  animation: rise 1.2s 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(160, 190, 255, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 45px rgba(200, 215, 255, 0.75);
+  }
+}
+
+/* While wishing: the start screen goes away, and the camera flies down and right with the star,
+   so the far clouds slowly drift up and left */
+
+.wishing #start {
+  opacity: 0;
+  transform: translateY(-30px);
+  pointer-events: none;
+}
+
+.wishing #clouds {
+  transform: translate(-14vw, -5vh);
+  transition: transform 2.8s cubic-bezier(0.2, 0.7, 0.3, 1), opacity 1s;
+}
+
+.wishing #horizon {
+  transform: translateY(-3vh);
+  transition: transform 2.8s cubic-bezier(0.2, 0.7, 0.3, 1), opacity 1s;
+}
+
+.wishing #sky {
+  opacity: 0.4;
+}
+
+/* close-up clouds that rush past in front of the star */
+#nearClouds {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow: hidden;
+  pointer-events: none;
+  filter: blur(5px);
+}
+
+.near-cloud {
+  position: absolute;
+  left: 0;
+  width: 600px;
+  height: 260px;
+  opacity: 0;
+  transform: translateX(110vw) scale(1.8);
+}
+
+.wishing .near-cloud {
+  animation-name: nearPass;
+  animation-timing-function: cubic-bezier(0.25, 0.6, 0.4, 1);
+  animation-fill-mode: both;
+}
+
+@keyframes nearPass {
+  0% {
+    opacity: 0;
+    transform: translateX(110vw) scale(1.8);
+  }
+  15% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0.9;
+    transform: translateX(-180%) scale(1.8);
+  }
+}
+
+/* When the result shows, the sky goes dark behind it */
+
+.revealing #sky {
+  opacity: 0.35;
+}
+
+.revealing #nebula {
+  opacity: 0.15;
+}
+
+.revealing #clouds,
+.revealing #horizon {
+  opacity: 0;
+}
+
+.revealing #start {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Animation canvas and flash */
+
+#wish {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* after the reveal, the ribbons fade out near the bottom instead of being cut off where the screen ends */
+.revealing #wish {
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 25vh), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 25vh), transparent);
+}
+
+#flash {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  background: radial-gradient(circle at 50% 50%, #ffffff 0%, #ffffff 35%, var(--flash-color, #cfe0ff) 100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* quick wash of color over the sky when the star changes color */
+#wash {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: radial-gradient(circle at 58% 46%, var(--wash-color, transparent) 0%, transparent 75%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* row of round buttons in the top right: logbook, copy text, copy image, sound */
+#toolbar {
+  position: fixed;
+  top: calc(var(--nav-height) + 12px);
+  right: 12px;
+  z-index: 11;
+  display: flex;
+  gap: 8px;
+}
+
+.tool {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.2s, opacity 0.2s, transform 0.2s;
+}
+
+.tool:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.18);
+  transform: scale(1.06);
+}
+
+.tool:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.tool svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: middle;
+}
+
+#toast {
+  position: fixed;
+  top: calc(var(--nav-height) + 62px);
+  right: 12px;
+  z-index: 11;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-size: 14px;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+}
+
+#toast.show {
+  opacity: 1;
+  transform: none;
+}
+
+/* Result */
+
+/* glow behind the emotes in the result's color, stronger for better results */
+#result::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(ellipse at 50% 50%, rgba(var(--glow), var(--glow-strength)) 0%, rgba(var(--glow), 0) 60%);
+  animation: glowIn 1.5s both;
+}
+
+#result {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  padding: var(--nav-height) 16px 0;
+  pointer-events: none;
+}
+
+#result[hidden] {
+  display: none;
+}
+
+.plate {
+  text-align: center;
+  animation: plateIn 0.9s 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.plate-label {
+  margin: 0;
+  font-size: clamp(30px, 4.5vw, 48px);
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7), 0 2px 24px rgba(0, 0, 0, 0.8);
+}
+
+.plate-stars {
+  margin-top: 6px;
+  font-size: clamp(22px, 3vw, 30px);
+  letter-spacing: 4px;
+}
+
+.plate-stars span {
+  display: inline-block;
+  color: #ffcc4d;
+  text-shadow: 0 0 12px rgba(255, 190, 60, 0.8);
+  animation: starPop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+
+@keyframes plateIn {
+  from {
+    opacity: 0;
+    transform: translateX(-60px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes starPop {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.emotes {
+  display: flex;
+  justify-content: center;
+  gap: clamp(8px, 2vw, 24px);
+}
+
+.emote {
+  position: relative;
+  width: clamp(56px, 13vw, 128px);
+}
+
+/* soft glow in the rarity color behind each emote */
+.emote::before {
+  content: "";
+  position: absolute;
+  inset: -30%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(var(--glow), 0.55) 0%, rgba(var(--glow), 0) 65%);
+  animation: glowIn 1.2s both;
+  animation-delay: inherit;
+}
+
+.emote img {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: auto;
+  animation: emoteIn 1.4s both;
+  animation-delay: inherit;
+}
+
+/* pops in as a white shape first, then fills in with color */
+@keyframes emoteIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.2);
+    filter: brightness(0) invert(1);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.18);
+    filter: brightness(0) invert(1);
+  }
+  50% {
+    transform: scale(1);
+    filter: brightness(0) invert(1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: none;
+  }
+}
+
+@keyframes glowIn {
+  from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.after {
+  text-align: center;
+  animation: rise 1s both;
+  animation-delay: var(--after-delay, 1.5s);
+}
+
+/* the reading: a dark frosted card so it's readable on any color */
+.after {
+  width: min(560px, 100%);
+  padding: 22px 28px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  pointer-events: auto;
+}
+
+#reading {
+  margin: 0;
+  font-size: clamp(17px, 2.2vw, 20px);
+  line-height: 1.5;
+  color: #f5f5f7;
+}
+
+.after .next {
+  margin: 16px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 14px;
+  color: #d2d2d7;
+}
+
+#countdown {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 734px) {
+  .after {
+    padding: 18px 20px;
+  }
+}
+
+/* short screens: pull everything closer so the reading still fits */
+@media (max-height: 760px) {
+  #result {
+    gap: 20px;
+  }
+}
+
+/* on wide screens the name plate sits on the left like in the game */
+@media (min-width: 1200px) {
+  .plate {
+    position: absolute;
+    left: 8%;
+    top: 50%;
+    margin-top: -60px;
+    text-align: left;
+  }
+}
+
+/* testing buttons, only there after running debugLuck() in the console */
+/* testing buttons, only there after running debugLuck() in the console */
+#debug {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 70vh;
+  max-width: min(720px, calc(100vw - 24px));
+  padding: 8px;
+  overflow-y: auto;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.debug-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #a1a1a6;
+}
+
+/* folded down: only the title bar and its Show button are left */
+#debug.collapsed .debug-row {
+  display: none;
+}
+
+.debug-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.debug-label {
+  width: 58px;
+  font-size: 11px;
+  color: #a1a1a6;
+}
+
+#debug button {
+  padding: 5px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  background: rgba(30, 30, 40, 0.9);
+  color: #fff;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cloud,
+  #start h1,
+  #start p,
+  #wishButton,
+  .plate,
+  .plate-stars span,
+  .emote::before,
+  .emote img,
+  .after {
+    animation: none;
+  }
+}

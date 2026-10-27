@@ -1,129 +1,308 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Jeffrey Tang - utilities and game mods.">
+  <meta name="theme-color" content="#000000">
   <title>Jeffrey's Stuff</title>
-  <link rel="stylesheet" href="styles.css" />
   <link rel="shortcut icon" type="image/png" href="images/favicon.png">
+
+  <!-- styles for the top of the page are right here so it shows up without waiting on any files -->
+  <style>
+    :root {
+      --bg: #000;
+      --text: #f5f5f7;
+      --muted: #86868b;
+      --header-color: lightblue;
+      --link-color: whitesmoke;
+      --link-hover: #63B5E8;
+      --accent: #2997ff;
+      --nav-height: 48px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      /* a soft light scrollbar on the dark page, so it doesn't turn into a black bar on hover */
+      scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* the same look in Chrome, Edge and Safari */
+    html::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    html::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+
+    html::-webkit-scrollbar-thumb {
+      border: 2px solid var(--bg);
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.28);
+    }
+
+    html::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.45);
+    }
+
+    /* body has to stay see-through or it would cover the sky */
+    body {
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    a {
+      color: var(--link-color);
+      text-decoration: none;
+    }
+
+    /* a little bigger than the screen so it can drift while you scroll (stars.js) without showing an edge */
+    #nebula {
+      position: fixed;
+      inset: -10%;
+      z-index: -2;
+      background:
+        radial-gradient(ellipse at 20% 25%, rgba(110, 70, 200, 0.22), transparent 55%),
+        radial-gradient(ellipse at 85% 65%, rgba(40, 110, 200, 0.2), transparent 55%),
+        radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+    }
+
+    #sky {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      width: 100%;
+      height: 100%;
+    }
+
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      height: var(--nav-height);
+      display: flex;
+      align-items: center;
+      padding: 0 max(16px, calc((100% - 980px) / 2));
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 14px;
+    }
+
+    nav .name {
+      font-weight: 600;
+      margin-right: auto;
+    }
+
+    nav a {
+      color: #d2d2d7;
+      transition: color 0.2s;
+    }
+
+    nav a:hover {
+      color: #fff;
+    }
+
+    .nav-link {
+      padding: 0 14px;
+      line-height: 14px;
+    }
+
+    .nav-link:last-child {
+      padding-right: 0;
+    }
+
+    /* thin line between each link */
+    .nav-link + .nav-link {
+      border-left: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    #hero {
+      position: relative;
+      height: 300vh;
+    }
+
+    /* where a quick swipe on a phone stops inside the hero: the top (the name) and the middle of the blurb.
+       They aren't snap points, so a mouse wheel scrolls through the intro freely */
+    .hero-stop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1px;
+      height: 100vh;
+      height: 100svh;
+      pointer-events: none;
+    }
+
+    .blurb-stop {
+      top: 120vh;
+    }
+
+    .hero-sticky {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      height: 100svh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    #heroText {
+      position: relative;
+      padding: 0 16px;
+      will-change: transform, opacity;
+    }
+
+    #heroText h1 {
+      margin: 0;
+      font-size: clamp(48px, 11vw, 140px);
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      line-height: 1.05;
+      animation: heroIn 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    #heroText p {
+      margin: 16px 0 0;
+      font-size: clamp(19px, 2.4vw, 28px);
+      color: var(--muted);
+      animation: heroIn 1.2s 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    /* the blurb sits on top of the name and gets faded in by script.js */
+    #aboutText {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: min(900px, 100% - 32px);
+      margin: 0;
+      transform: translate(-50%, -50%);
+      font-size: clamp(26px, 4vw, 46px);
+      font-weight: 600;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+      opacity: 0;
+      will-change: transform, opacity;
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 32px;
+      left: 0;
+      right: 0;
+      font-size: 13px;
+      color: var(--muted);
+      animation: heroIn 1s 1s both;
+    }
+
+    @keyframes heroIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.96);
+      }
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #hero {
+        height: auto;
+      }
+      .hero-sticky {
+        position: static;
+        height: auto;
+        flex-direction: column;
+        gap: 10vh;
+        padding: 25vh 0 15vh;
+      }
+      .hero-stop {
+        display: none;
+      }
+      #aboutText {
+        position: static;
+        transform: none;
+        opacity: 1;
+      }
+      #heroText h1,
+      #heroText p,
+      .scroll-hint {
+        animation: none;
+      }
+      .scroll-hint {
+        display: none;
+      }
+    }
+  </style>
+
+  <noscript>
+    <style>
+      html { scroll-snap-type: none; }
+      #hero { height: auto; }
+      .hero-stop { display: none; }
+      .hero-sticky { position: static; height: auto; flex-direction: column; gap: 10vh; padding: 25vh 0 15vh; }
+      #aboutText { position: static; transform: none; opacity: 1; }
+      .scroll-hint { display: none; }
+    </style>
+  </noscript>
+
+  <link rel="stylesheet" href="styles.css">
+
+  <script src="stars.js" defer></script>
+  <script src="content.js" defer></script>
+  <script src="script.js" defer></script>
 </head>
 
 <body>
-  <header>
-    <script src="script.js" defer></script>
+  <div id="nebula"></div>
+  <canvas id="sky"></canvas>
 
-    <h1>Welcome!</h1>
-	<div id="selfDescription">
-	  <p>I'm Jeffrey Tang, a developer coding various utilities and mods for games as a hobby. Most of these projects were developed using knowledge that was self-taught from available documentation online. I'm confident in my ability to pick up new languages and skills if given the chance to learn. My drive primarily comes from a desire to create, whether it's something completely new or a new addition to an existing project.</p>
-	</div>
-	
-    <div class="links">
-      <a href="https://github.com/JeffreyTangMain/">Github Link</a>
+  <nav id="nav">
+    <a class="name" href="#">Jeffrey Tang</a>
+    <a class="nav-link" href="dailystargazing/index.html">Daily Stargazing</a>
+    <!-- category links get added here by script.js -->
+    <a class="nav-link" href="https://github.com/JeffreyTangMain/">GitHub</a>
+  </nav>
+
+  <header id="hero">
+    <!-- invisible resting points for scroll snapping: the name, then the blurb -->
+    <div class="hero-stop" aria-hidden="true"></div>
+    <div class="hero-stop blurb-stop" aria-hidden="true"></div>
+    <div class="hero-sticky">
+      <div id="heroText">
+        <h1>Jeffrey Tang</h1>
+        <p>Utilities and game mods. Self-taught.</p>
+      </div>
+      <p id="aboutText">I'm Jeffrey Tang, a developer coding various utilities and mods for games as a hobby. Most of these projects were developed using knowledge that was self-taught from available documentation online. I'm confident in my ability to pick up new languages and skills if given the chance to learn. My drive primarily comes from a desire to create, whether it's something completely new or a new addition to an existing project.</p>
+      <div class="scroll-hint" id="scrollHint">Scroll to explore &darr;</div>
     </div>
-
-    <div id="stars"></div>
-    <div id="stars2"></div>
-    <div id="stars3"></div>
   </header>
 
-  <main>
-    <hr>
-    <h1>Personal Projects</h1>
-    <section>
-      <h2 class="name">Various Userscripts</h2>
-      <div class="imageGroup">
-        <div class="currentImage project1">
-          <div class="mySlides fade">
-            <img src="images/project1/1.png">
-          </div>
-          <div class="mySlides fade">
-            <img src="images/project1/2.png">
-          </div>
-          <div class="mySlides fade">
-            <img src="images/project1/3.png">
-          </div>
-        </div>
-        <div class="imageSelector project1" >
-          <span class="dot" onclick="project1.setSlide(1)"></span>
-          <span class="dot" onclick="project1.setSlide(2)"></span>
-          <span class="dot" onclick="project1.setSlide(3)"></span>
-        </div>
-      </div>
-      <p class="description">Lightweight userscripts designed to help with repetitive tasks in some websites. All made in JS and tested with the TamperMonkey extension.</p>
-      <div class="links">
-        <a href="https://github.com/JeffreyTangMain/Various-Userscripts" target=”_blank”>Github</a>
-      </div>
-    </section>
-    <hr>
-    <section>
-      <h2 class="name">YouTube Download Scripts</h2>
-      <div class="imageGroup">
-        <div class="currentImage project2">
-          <div class="mySlides fade">
-            <img src="images/project2/1.png">
-          </div>
-          <div class="mySlides fade">
-            <img src="images/project2/2.png">
-          </div>
-        </div>
-        <div class="imageSelector project2" >
-          <span class="dot" onclick="project2.setSlide(1)"></span>
-          <span class="dot" onclick="project2.setSlide(2)"></span>
-        </div>
-      </div>
-      <p class="description">A downloader for any YouTube video, in MP3 or MP4 formats. Made using Windows Batch files for simplicity and speed.</p>
-      <div class="links">
-        <a href="https://github.com/JeffreyTangMain/YouTube-DL-Scripts" target=”_blank”>Github</a>
-      </div>
-    </section>
-    <hr>
-    <section>
-      <h2 class="name">3DS Developer Area Template</h2>
-      <div class="imageGroup">
-        <div class="currentImage project3">
-          <div class="mySlides fade">
-            <img src="images/project3/1.png">
-          </div>
-          <div class="mySlides fade">
-            <img src="images/project3/2.png">
-          </div>
-        </div>
-        <div class="imageSelector project3" >
-          <span class="dot" onclick="project3.setSlide(1)"></span>
-          <span class="dot" onclick="project3.setSlide(2)"></span>
-        </div>
-      </div>
-      <p class="description">A simple template for decompiling, modding, and recompiling 3DS games. Batch files provide compatibility between many tools developed by different people.</p>
-      <div class="links">
-        <a href="https://github.com/JeffreyTangMain/3DS-Dev-Area-Template" target=”_blank”>Github</a>
-      </div>
-    </section>
-    <hr>
-    <section>
-      <h2 class="name">Octopath Traveler Mods</h2>
-      <div class="imageGroup">
-        <div class="currentImage project4">
-          <div class="mySlides fade">
-            <img src="images/project4/1.png">
-          </div>
-          <div class="mySlides fade">
-            <img src="images/project4/2.png">
-          </div>
-        </div>
-        <div class="imageSelector project4" >
-          <span class="dot" onclick="project4.setSlide(1)"></span>
-          <span class="dot" onclick="project4.setSlide(2)"></span>
-        </div>
-      </div>
-      <p class="description">A collection of mods for Octopath Traveler. Python scripts were able to flexibly edit the data within these compiled files.</p>
-      <div class="links">
-        <a href="https://github.com/JeffreyTangMain/Octopath-Traveler-Mods" target=”_blank”>Github</a>
-      </div>
-    </section>
-    <hr>
-	<h2>There are only stars below...</h2>
+  <main id="content">
+    <noscript>
+      <p class="noscript">Turn on JavaScript to see the projects, or check them out on <a href="https://github.com/JeffreyTangMain/">GitHub</a>.</p>
+    </noscript>
   </main>
 
   <footer>
+    <a class="button" href="https://github.com/JeffreyTangMain/">More on GitHub</a>
+    <p>Jeffrey Tang</p>
   </footer>
 </body>
 
