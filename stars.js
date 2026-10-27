@@ -6,7 +6,6 @@ const sky = document.getElementById("sky");
 const ctx = sky.getContext("2d");
 const nebula = document.getElementById("nebula");
 const heroSection = document.getElementById("hero");
-const stillSky = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 // white, blue-ish and warm stars
 const starColors = ["255, 255, 255", "200, 225, 255", "255, 236, 205"];
@@ -145,7 +144,7 @@ function drawSky(time) {
   // the sky reacts to scrolling: stars light up while the page is moving,
   // and the nebula drifts up and slowly changes color further down the page
   let rush = 0;
-  if (heroSection && !stillSky) {
+  if (heroSection) {
     rush = Math.min(Math.abs(scrollSpeed) / 25, 0.7);
     const pageProgress = Math.min(1, scroll / Math.max(1, document.documentElement.scrollHeight - skyHeight));
     const shift = Math.round(pageProgress * 80) / 10;
@@ -157,7 +156,7 @@ function drawSky(time) {
   }
 
   // a burst of shooting stars right as the top section ends
-  if (!stillSky && heroSection) {
+  if (heroSection) {
     if (!burstDone && scroll > heroEnd * 0.9) {
       for (let i = 0; i < 5; i++) {
         addMeteor(i * 12 + Math.random() * 10);
@@ -234,14 +233,7 @@ window.addEventListener("resize", function () {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(function () {
     setupSky();
-    if (stillSky) {
-      drawSky(0);
-    }
   }, 150);
 });
 
-if (stillSky) {
-  drawSky(0);
-} else {
-  requestAnimationFrame(loop);
-}
+requestAnimationFrame(loop);

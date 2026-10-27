@@ -1016,14 +1016,6 @@ function climbRank() {
     paintRank(shownRank, false);
     return;
   }
-  if (calmMode) {
-    shownRank++;
-    paintRank(shownRank, true);
-    playRankUp(shownRank, climbStep);
-    climbStep++;
-    setTimeout(climbRank, 50);
-    return;
-  }
   // the bar fills to the end, a shine runs along it, and the old name lifts away
   rankFill.style.width = "100%";
   setTimeout(function () {
@@ -1281,7 +1273,7 @@ function drawOrbit(c, star, x, y, radius, time, front, emoteSize) {
   const ringX = radius * 2.6 + 12;
   const ringY = ringX * 0.38;
   const tilt = -0.35;
-  const turn = calmMode ? 0.6 : time / 6000 + star.id;
+  const turn = time / 6000 + star.id;
   for (let i = 0; i < count; i++) {
     const angle = turn + (i / count) * Math.PI * 2;
     // sin is positive on the near half of the ring
@@ -1338,9 +1330,6 @@ function drawLink(c, a, b, time) {
   c.lineTo(bx, by);
   c.stroke();
 
-  if (calmMode) {
-    return;
-  }
   // one mote drifts each way, at different speeds
   for (let k = 0; k < 2; k++) {
     let t = (time / (2600 + k * 900) + a.id * 0.13 + b.id * 0.07 + k * 0.5) % 1;
@@ -1388,7 +1377,7 @@ function drawConstellation(now) {
     const radius = starRadius(star);
     const color = colorForCount(star.rarity);
     const fill = fillFraction(star, now);
-    const twinkle = calmMode ? 1 : 0.8 + 0.2 * Math.sin(time / 700 + star.id * 1.7);
+    const twinkle = 0.8 + 0.2 * Math.sin(time / 700 + star.id * 1.7);
 
     if (showLinkRange && skyEditing) {
       skyPen.strokeStyle = "rgba(255, 255, 255, 0.12)";
@@ -1403,7 +1392,7 @@ function drawConstellation(now) {
     drawOrbit(skyPen, star, x, y, radius, time, false);
     skyPen.save();
     skyPen.globalCompositeOperation = "lighter";
-    const spin = calmMode ? 0 : time / 9000 + star.id;
+    const spin = time / 9000 + star.id;
     drawStarShape(skyPen, x, y, radius * 0.95, star.rarity, twinkle + (fill >= 1 ? 0.3 : 0), spin);
     skyPen.restore();
     drawOrbit(skyPen, star, x, y, radius, time, true);
@@ -1421,7 +1410,7 @@ function drawConstellation(now) {
 
     // full stars get a softly pulsing glow on their ring
     if (fill >= 1) {
-      const pulse = calmMode ? 0.6 : 0.5 + 0.5 * Math.sin(time / 400);
+      const pulse = 0.5 + 0.5 * Math.sin(time / 400);
       skyPen.save();
       skyPen.globalCompositeOperation = "lighter";
       skyPen.strokeStyle = rgba(mixColor(color, whiteColor, 0.5), 0.35 + pulse * 0.4);
@@ -1777,13 +1766,6 @@ function addShownStar(debug) {
   saveSky();
   addStarButton.disabled = true;
   playOrb(star.rarity);
-  if (calmMode) {
-    arrivingStarId = null;
-    showToast(star.name + (star.active ? " joined your constellation" : " joined your collection"));
-    updateAddButton();
-    renderSky();
-    return;
-  }
   starToOrb(star);
 }
 

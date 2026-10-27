@@ -288,27 +288,3 @@ footer p {
     border-radius: 12px;
   }
 }
-
-/* People who turned off animations get a normal page with everything showing */
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-snap-type: none;
-  }
-
-  .project {
-    padding-top: 10vh;
-    padding-bottom: 10vh;
-  }
-
-  .reveal {
-    opacity: 1;
-    transform: none;
-  }
-
-  .reveal,
-  .button,
-  .dot {
-    transition: none;
-  }
-}

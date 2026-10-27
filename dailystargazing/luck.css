@@ -628,17 +628,3 @@
   font-size: 11px;
   cursor: pointer;
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .cloud,
-  #start h1,
-  #start p,
-  #wishButton,
-  .plate,
-  .plate-stars span,
-  .emote::before,
-  .emote img,
-  .after {
-    animation: none;
-  }
-}

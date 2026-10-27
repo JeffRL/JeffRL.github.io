@@ -35,8 +35,6 @@ const stallTime = 1350;
 // how often a wish of 2 stars or more is shown as a fakeout
 const fakeoutChance = 0.04;
 
-const calmMode = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
 const wishCanvas = document.getElementById("wish");
 const pen = wishCanvas.getContext("2d");
 const wishButton = document.getElementById("wishButton");
@@ -1325,15 +1323,13 @@ function showResult(fortune) {
   document.body.classList.remove("wishing");
   document.body.classList.add("revealing");
 
-  if (!calmMode) {
-    if (!wish) {
-      wish = { count: count, tier: count, start: performance.now(), done: { all: true }, finished: true };
-    }
-    wish.finished = true;
-    wish.revealStart = performance.now();
-    makeRibbons(count);
-    startAnimating();
+  if (!wish) {
+    wish = { count: count, tier: count, start: performance.now(), done: { all: true }, finished: true };
   }
+  wish.finished = true;
+  wish.revealStart = performance.now();
+  makeRibbons(count);
+  startAnimating();
 }
 
 function hideResult() {
@@ -1350,16 +1346,6 @@ function playWish(fortune, real, fakeout) {
   hideResult();
   document.body.classList.remove("revealing");
   startSound();
-
-  if (calmMode) {
-    if (real) {
-      saveWatched();
-      recordFortune(fortune);
-    }
-    showResult(fortune);
-    playReveal(count);
-    return;
-  }
 
   // the wish happens at the top of the page, and the page can't scroll while it plays
   window.scrollTo(0, 0);
@@ -1985,11 +1971,6 @@ function buildDebugPanel() {
 // removes everything this page has saved in the browser and starts over,
 // fading to black first (the fresh page fades back in, see the top of index.html)
 function wipeAllData() {
-  if (calmMode) {
-    clearSavedData();
-    location.reload();
-    return;
-  }
   const black = document.createElement("div");
   black.style.cssText = "position: fixed; inset: 0; z-index: 100; background: #000;";
   document.body.appendChild(black);

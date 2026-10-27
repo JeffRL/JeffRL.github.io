@@ -1,7 +1,6 @@
 // Builds the projects part of the page from content.js and runs the scroll animations.
 // (stars.js handles the background, so don't reuse its variable names here)
 
-const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const nav = document.getElementById("nav");
 const content = document.getElementById("content");
@@ -190,10 +189,8 @@ function buildProject(info, parent) {
   }, { passive: true });
 
   // start hidden, the scroll animation fades them in
-  if (!reduceMotion) {
-    text.style.opacity = 0;
-    carousel.style.opacity = 0;
-  }
+  text.style.opacity = 0;
+  carousel.style.opacity = 0;
 
   section.appendChild(text);
   section.appendChild(carousel);
@@ -210,7 +207,7 @@ function goToSlide(project, index) {
   }
   const slide = project.slides[index];
   const left = slide.offsetLeft - (project.track.clientWidth - slide.offsetWidth) / 2;
-  project.track.scrollTo({ left: left, behavior: reduceMotion ? "auto" : "smooth" });
+  project.track.scrollTo({ left: left, behavior: "smooth" });
 }
 
 // shrink and dim slides the further they are from the middle, and update the dots
@@ -228,11 +225,9 @@ function updateSlides(project) {
       closestDistance = distance;
       closest = i;
     }
-    if (!reduceMotion) {
-      const away = clamp(distance / slide.offsetWidth);
-      project.images[i].style.transform = "scale(" + (1 - away * 0.1) + ")";
-      project.images[i].style.opacity = 1 - away * 0.6;
-    }
+    const away = clamp(distance / slide.offsetWidth);
+    project.images[i].style.transform = "scale(" + (1 - away * 0.1) + ")";
+    project.images[i].style.opacity = 1 - away * 0.6;
   }
 
   if (closest !== project.current && project.dots.length > 0) {
@@ -555,14 +550,12 @@ function setUpSwipes() {
   }, { passive: true });
 }
 
-if (!reduceMotion) {
-  watchProjects();
-  watchReveals();
-  setUpSwipes();
-  window.addEventListener("scroll", onScroll, { passive: true });
-  window.addEventListener("resize", onScroll);
-  update();
-}
+watchProjects();
+watchReveals();
+setUpSwipes();
+window.addEventListener("scroll", onScroll, { passive: true });
+window.addEventListener("resize", onScroll);
+update();
 
 window.addEventListener("resize", function () {
   for (let i = 0; i < projects.length; i++) {

@@ -264,7 +264,7 @@ function renderStarDetail(star) {
     '<h3 class="skills-title">Skills</h3>' +
     '<ul class="skill-list">' + skills + "</ul>";
   paintStarIcons(drawerDetail);
-  if (!detailSpinning && !calmMode) {
+  if (!detailSpinning) {
     detailSpinning = true;
     requestAnimationFrame(spinDetailStar);
   }

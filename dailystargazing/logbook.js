@@ -1,5 +1,5 @@
 // The logbook: saves each day's result in the browser and shows it in a book with three tabs
-// (Collection, Daily and Graph). Uses getToday, emoteName, pickFortune, odds and calmMode from luck.js.
+// (Collection, Daily and Graph). Uses getToday, emoteName, pickFortune, odds from luck.js.
 
 const logKey = "dailystargazing-log";
 
@@ -174,13 +174,6 @@ function openBook() {
 
   cover.style.visibility = "visible";
 
-  if (calmMode) {
-    // no swing, just lay the cover open under the pages
-    cover.style.transform = "rotateY(-180deg)";
-    cover.style.zIndex = 0;
-    return;
-  }
-
   bookBusy = true;
   const shift = isSpread() ? -book.offsetWidth / 4 : 0;
   const from = logButton.getBoundingClientRect();
@@ -230,14 +223,6 @@ function closeBook() {
   readingPopup.hidden = true;
   resetPopup.hidden = true;
   bookTop.hidden = true;
-  if (calmMode) {
-    bookOverlay.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: "forwards" }).finished.then(function () {
-      bookOverlay.hidden = true;
-      bookOpen = false;
-    });
-    return;
-  }
-
   bookBusy = true;
   const shift = isSpread() ? -book.offsetWidth / 4 : 0;
   const turn = { duration: 800, easing: "cubic-bezier(0.45, 0, 0.2, 1)", fill: "forwards" };
@@ -281,7 +266,7 @@ function closeBook() {
 // and when it lands it looks exactly like the page underneath, which is swapped in at that moment.
 // forward turns right to left (like going to the next page), backward the other way.
 function flipPage(forward, change) {
-  if (calmMode || bookBusy) {
+  if (bookBusy) {
     change();
     return;
   }
@@ -456,21 +441,15 @@ function showDetail(id) {
       '<p class="detail-text">' + safeText(fortune.text) + '</p>';
   }
   readingPopup.hidden = false;
-  if (!calmMode) {
-    readingPopup.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200 });
-    readingPopup.querySelector(".reading-card").animate([
-      { transform: "scale(0.92)", opacity: 0 },
-      { transform: "none", opacity: 1 }
-    ], { duration: 200, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" });
-  }
+  readingPopup.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200 });
+  readingPopup.querySelector(".reading-card").animate([
+    { transform: "scale(0.92)", opacity: 0 },
+    { transform: "none", opacity: 1 }
+  ], { duration: 200, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" });
 }
 
 function closeReading() {
   if (readingPopup.hidden) {
-    return;
-  }
-  if (calmMode) {
-    readingPopup.hidden = true;
     return;
   }
   readingPopup.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 150 }).finished.then(function () {
@@ -484,13 +463,11 @@ readingClose.addEventListener("click", closeReading);
 
 function openResetWarning() {
   resetPopup.hidden = false;
-  if (!calmMode) {
-    resetPopup.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200 });
-    resetPopup.querySelector(".reading-card").animate([
-      { transform: "scale(0.92)", opacity: 0 },
-      { transform: "none", opacity: 1 }
-    ], { duration: 200, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" });
-  }
+  resetPopup.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200 });
+  resetPopup.querySelector(".reading-card").animate([
+    { transform: "scale(0.92)", opacity: 0 },
+    { transform: "none", opacity: 1 }
+  ], { duration: 200, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" });
   document.getElementById("resetCancel").focus();
 }
 
@@ -530,7 +507,7 @@ book.addEventListener("scroll", function (event) {
 
 bookTop.addEventListener("click", function () {
   if (lastScrolled) {
-    lastScrolled.scrollTo({ top: 0, behavior: calmMode ? "auto" : "smooth" });
+    lastScrolled.scrollTo({ top: 0, behavior: "smooth" });
   }
 });
 
@@ -979,7 +956,7 @@ book.addEventListener("click", function (event) {
   if (row) {
     const section = document.getElementById("raritySection" + row.getAttribute("data-rarity"));
     if (section) {
-      section.scrollIntoView({ behavior: calmMode ? "auto" : "smooth", block: "start" });
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
     }
     return;
   }
