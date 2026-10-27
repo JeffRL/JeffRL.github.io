@@ -2,7 +2,7 @@
 // logEntryFor from logbook.js, and emoteEmoji from fortunes.js.
 
 // where the page lives once it's on GitHub Pages. Change this if the address ever changes.
-const shareUrl = "https://jeffreytangmain.github.io/dailystargazing/";
+const shareUrl = "https://JeffRL.github.io/dailystargazing/";
 
 const copyTextButton = document.getElementById("copyTextButton");
 const copyImageButton = document.getElementById("copyImageButton");
